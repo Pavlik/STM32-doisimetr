@@ -3,6 +3,34 @@
 extern TIM_HandleTypeDef htim15;
 extern ADC_HandleTypeDef hadc1;
 
+bool HV = false;
+
+
+
+void initHV()
+{
+	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+	startPump();
+	do
+	{
+		if(HV == true)
+		{
+			startADC();
+			if(measureHV() < HV_REF_VALUE)
+			{
+				return;
+			}
+			else break;
+		}
+		else
+		{
+			startPump();
+			return;
+		}
+	}
+	while(true);
+}
+
 
 void startPump()
 {

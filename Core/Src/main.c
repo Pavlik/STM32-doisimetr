@@ -50,10 +50,12 @@ TIM_HandleTypeDef htim15;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+
+extern bool HV;
 bool enableDataTransmit = 0;
 char trans_str[64] = {0,};
 volatile uint16_t adc = 0;
-uint8_t counter = 0;
+uint32_t counter = 0;
 
 /* USER CODE END PV */
 
@@ -73,8 +75,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	{
 	    if(hadc->Instance == ADC1) //check if the interrupt comes from ACD1
 	    {
-	        adc = measureHV();
-	        enableDataTransmit = true;
+
 	    }
 	}
 
@@ -82,11 +83,12 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 	{
 	        if(htim->Instance == TIM15)
 	        {
-	        	stopPump();
-	        	startADC();
-
-	        	//HAL_TIM_PWM_Start_IT(&htim15, TIM_CHANNEL_1);
+	        	counter++;
+		        if(counter == 10)
+		        stopPump();
+		        HV = true;
 	        }
+
 	}
 
 
@@ -138,9 +140,7 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
-  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
-  HAL_ADC_Start_IT(&hadc1);
-  HAL_TIM_PWM_Start_IT(&htim15, TIM_CHANNEL_1);
+  initHV();
   uint32_t checkTimer = 0;
   /* USER CODE END 2 */
 
@@ -148,30 +148,39 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  if(enableDataTransmit == true)
+	  {
+		  snprintf(trans_str, 63, "ADC %d\n", (uint16_t)measureHV());
+		  HAL_UART_Transmit(&huart1, (uint8_t*)trans_str, strlen(trans_str), 1000);
+		  enableDataTransmit = false;
+	  }
+	  if(HAL_GetTick() - checkTimer >= 1000)
+	  {
+	  		  checkTimer = HAL_GetTick();
+	  		  startADC();
+	  		  enableDataTransmit = true;
+	  }
 	  if(measureHV() < 1500)
 	  {
-	  			  startPump();
+		  startPump();
 	  }
 	  else
 	  {
 		  stopPump();
 	  }
-	  if(enableDataTransmit == true)
-	  {
-
-		  snprintf(trans_str, 63, "ADC %d\n", (uint16_t)adc);
-		  HAL_UART_Transmit(&huart1, (uint8_t*)trans_str, strlen(trans_str), 1000);
-		  adc = 0;
-		  enableDataTransmit = 0;
-	  }
-	  if(HAL_GetTick() - checkTimer >= 1000)
-	  {
-		  checkTimer = HAL_GetTick();
-		  startADC();
-	  }
-
-
+//	  if(counter == 10)
+//	  {
+//		  stopPump();
+//		  startADC();
+//		  if(measureHV() <= 1500)
+//		  {
+//			  startPump();
+//		  }
+//		  HAL_Delay(5000);
+//		  	  counter = 0;
+//		  	  HAL_TIM_PWM_Start_IT(&htim15, TIM_CHANNEL_1);
+//
+//	  }
 
     /* USER CODE END WHILE */
 
@@ -324,10 +333,6 @@ static void MX_TIM15_Init(void)
     Error_Handler();
   }
   if (HAL_TIM_PWM_Init(&htim15) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_OnePulse_Init(&htim15, TIM_OPMODE_SINGLE) != HAL_OK)
   {
     Error_Handler();
   }

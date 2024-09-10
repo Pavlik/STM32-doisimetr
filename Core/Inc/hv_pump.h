@@ -6,6 +6,9 @@ extern "C" {
 #endif
 
 #include "stm32l4xx.h"
+#include "stdbool.h"
+
+#define HV_REF_VALUE 1500
 
 #define COUNTER_ENABLE_PORT GPIOC
 #define COUNTER_ENABLE_PIN  GPIO_PIN_13
@@ -20,5 +23,6 @@ void startADC();
 void stopADC();
 
 uint16_t measureHV();
+void initHV();
 
 #endif
