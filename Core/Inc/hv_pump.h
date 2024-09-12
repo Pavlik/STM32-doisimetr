@@ -7,6 +7,7 @@ extern "C" {
 
 #include "stm32l4xx.h"
 #include "stdbool.h"
+#include "main.h"
 
 #define HV_REF_VALUE 1500
 
@@ -24,5 +25,8 @@ void stopADC();
 
 uint16_t measureHV();
 void initHV();
+
+void ADC_To_GPIO();
+void GPIO_To_ADC();
 
 #endif

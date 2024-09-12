@@ -51,7 +51,9 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 
-extern bool HV;
+extern bool HVpumpInit;
+extern uint16_t adcHVvalue;
+
 bool enableDataTransmit = 0;
 char trans_str[64] = {0,};
 volatile uint16_t adc = 0;
@@ -75,7 +77,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	{
 	    if(hadc->Instance == ADC1) //check if the interrupt comes from ACD1
 	    {
-
+	    	adcHVvalue = measureHV();
+	    	ADC_To_GPIO();
 	    }
 	}
 
@@ -85,8 +88,11 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 	        {
 	        	counter++;
 		        if(counter == 10)
-		        stopPump();
-		        HV = true;
+		        {
+		        	counter = 0;
+		        	HVpumpInit = true;
+		        	stopPump();
+		        }
 	        }
 
 	}
@@ -148,7 +154,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(enableDataTransmit == true)
+	  /*if(enableDataTransmit == true)
 	  {
 		  snprintf(trans_str, 63, "ADC %d\n", (uint16_t)measureHV());
 		  HAL_UART_Transmit(&huart1, (uint8_t*)trans_str, strlen(trans_str), 1000);
@@ -167,7 +173,7 @@ int main(void)
 	  else
 	  {
 		  stopPump();
-	  }
+	  }*/
 //	  if(counter == 10)
 //	  {
 //		  stopPump();

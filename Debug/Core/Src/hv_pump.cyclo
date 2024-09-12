@@ -1,6 +1,8 @@
-../Core/Src/hv_pump.c:10:6:initHV	2
+../Core/Src/hv_pump.c:11:6:initHV	3
 ../Core/Src/hv_pump.c:35:6:startPump	1
 ../Core/Src/hv_pump.c:41:6:stopPump	1
 ../Core/Src/hv_pump.c:47:6:startADC	1
 ../Core/Src/hv_pump.c:52:6:stopADC	1
 ../Core/Src/hv_pump.c:57:10:measureHV	1
+../Core/Src/hv_pump.c:62:6:ADC_To_GPIO	1
+../Core/Src/hv_pump.c:76:6:GPIO_To_ADC	3
